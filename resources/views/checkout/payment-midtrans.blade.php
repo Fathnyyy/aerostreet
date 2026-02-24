@@ -341,27 +341,60 @@
                 // Give it a moment for loading state to show
                 setTimeout(() => {
                     window.snap.pay(this.snapToken, {
+
+                        // ================================================================
+                        // onSuccess: PENGGANTI WEBHOOK
+                        // Karena localhost tanpa ngrok, kita panggil endpoint internal
+                        // Laravel via fetch() POST untuk update status order → paid
+                        // ================================================================
                         onSuccess: (result) => {
-                            this.isLoading = false;
-                            this.paymentStatus = 'success';
-                            this.statusMessage = '✓ Payment successful! Your order is being processed.';
-                            this.startCountdown();
+                            this.isLoading  = true;
+                            this.statusMessage = 'Memverifikasi pembayaran...';
+
+                            // Kirim request ke route internal untuk update status
+                            fetch('{{ route('checkout.midtrans.success', $order) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type':  'application/json',
+                                    'Accept':        'application/json',
+                                    // Sertakan CSRF token dari meta tag
+                                    'X-CSRF-TOKEN':  document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                },
+                                body: JSON.stringify({ transaction_result: result }),
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                this.isLoading     = false;
+                                this.paymentStatus = 'success';
+                                this.statusMessage = '✓ Pembayaran berhasil dikonfirmasi! Pesanan sedang diproses.';
+                                this.startCountdown();
+                            })
+                            .catch(err => {
+                                // Meski fetch gagal, pembayaran di Midtrans sudah sukses
+                                // Tetap anggap berhasil, admin bisa cek secara manual
+                                this.isLoading     = false;
+                                this.paymentStatus = 'success';
+                                this.statusMessage = '✓ Pembayaran diterima Midtrans! Mengalihkan ke dashboard...';
+                                this.startCountdown();
+                                console.error('Failed to notify server, but payment was successful:', err);
+                            });
                         },
+
                         onPending: (result) => {
-                            this.isLoading = false;
+                            this.isLoading     = false;
                             this.paymentStatus = 'pending';
-                            this.statusMessage = 'Payment pending. Please complete your payment as instructed.';
+                            this.statusMessage = 'Pembayaran pending. Selesaikan pembayaran sesuai instruksi.';
                         },
+
                         onError: (result) => {
-                            this.isLoading = false;
+                            this.isLoading     = false;
                             this.paymentStatus = 'error';
-                            this.statusMessage = 'Payment failed. Please try again or choose another method.';
+                            this.statusMessage = 'Pembayaran gagal. Silakan coba lagi atau pilih metode lain.';
                         },
+
                         onClose: () => {
                             this.isLoading = false;
-                            if (!this.paymentStatus) {
-                                // User closed without paying
-                            }
+                            // User menutup popup tanpa bayar — tidak lakukan apa-apa
                         }
                     });
                 }, 300);
@@ -372,6 +405,7 @@
                     this.countdown--;
                     if (this.countdown <= 0) {
                         clearInterval(interval);
+                        // Redirect ke dashboard setelah countdown habis
                         window.location.href = '{{ route('dashboard') }}';
                     }
                 }, 1000);

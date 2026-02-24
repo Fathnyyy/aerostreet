@@ -281,9 +281,58 @@
                         </div>
                     </div>
 
+                    {{-- PROOF PREVIEW: Tampilkan jika sudah pernah upload --}}
+                    @if($order->payment_proof)
+                    <div class="bg-white border-4 border-black p-6 fade-up" style="animation-delay: 0.15s">
+
+                        {{-- Badge Status Header --}}
+                        <div class="flex items-center justify-between mb-5">
+                            <h2 class="text-lg font-black uppercase tracking-tight brand-font">Bukti Pembayaran</h2>
+                            <div class="flex items-center gap-2 bg-amber-400 border-2 border-black px-4 py-1.5">
+                                <span class="relative flex h-2.5 w-2.5">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-black opacity-40"></span>
+                                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-black"></span>
+                                </span>
+                                <span class="text-[11px] font-black uppercase tracking-[0.2em] text-black">STATUS: WAITING VERIFICATION</span>
+                            </div>
+                        </div>
+
+                        {{-- Gambar Struk --}}
+                        <div class="border-2 border-dashed border-gray-400 p-3 bg-gray-50 mb-5">
+                            <img src="{{ Storage::url($order->payment_proof) }}"
+                                 alt="Bukti Pembayaran"
+                                 class="max-h-72 mx-auto object-contain block cursor-pointer hover:opacity-90 transition"
+                                 onclick="this.requestFullscreen ? this.requestFullscreen() : this.webkitRequestFullscreen()"
+                                 title="Klik untuk perbesar">
+                            <p class="text-[10px] text-center text-gray-400 mt-2 uppercase tracking-widest">Klik gambar untuk perbesar</p>
+                        </div>
+
+                        {{-- Info Upload --}}
+                        <div class="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 px-4 py-2.5 mb-5">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span class="font-bold uppercase tracking-wider">Bukti transfer sudah diterima — menunggu konfirmasi admin</span>
+                        </div>
+
+                        {{-- Divider --}}
+                        <div class="border-t-2 border-dashed border-gray-200 my-6"></div>
+                        <h3 class="text-base font-black uppercase tracking-tight brand-font mb-1">Upload Ulang Bukti</h3>
+                        <p class="text-xs text-gray-500 mb-5">Jika foto yang dikirim salah atau buram, upload ulang di sini.</p>
+                    </div>
+                    @endif
+
                     {{-- UPLOAD PROOF FORM --}}
                     <div class="bg-white border border-gray-200 p-6">
-                        <h2 class="text-lg font-black uppercase tracking-tight brand-font mb-5">Upload Transfer Proof</h2>
+                        <h2 class="text-lg font-black uppercase tracking-tight brand-font mb-5">
+                            {{ $order->payment_proof ? 'Ganti Bukti Transfer' : 'Upload Bukti Transfer' }}
+                        </h2>
+
+                        {{-- Flash success --}}
+                        @if(session('success'))
+                        <div class="mb-5 flex items-center gap-3 bg-black text-white px-4 py-3">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <p class="text-xs font-bold uppercase tracking-wide">{{ session('success') }}</p>
+                        </div>
+                        @endif
 
                         <form action="{{ route('checkout.upload-proof', $order) }}" method="POST" enctype="multipart/form-data"
                               x-data="uploadForm()" @submit.prevent="submitForm">
@@ -311,7 +360,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                                         <span x-text="fileName"></span>
                                     </p>
-                                    <p class="text-xs text-gray-400 mt-1">Click to change</p>
+                                    <p class="text-xs text-gray-400 mt-1">Klik untuk ganti</p>
                                 </div>
 
                                 <!-- Default State -->
@@ -321,9 +370,9 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                         </svg>
                                     </div>
-                                    <p class="text-sm font-bold uppercase tracking-wider mb-1">Drop your file here</p>
-                                    <p class="text-xs text-gray-400">or click to browse</p>
-                                    <p class="text-[10px] text-gray-300 mt-3 uppercase tracking-wider">JPG, PNG — Max 5MB</p>
+                                    <p class="text-sm font-bold uppercase tracking-wider mb-1">Drop file di sini</p>
+                                    <p class="text-xs text-gray-400">atau klik untuk pilih file</p>
+                                    <p class="text-[10px] text-gray-300 mt-3 uppercase tracking-wider">JPG, PNG — Maks 2MB</p>
                                 </div>
                             </div>
 
@@ -341,7 +390,7 @@
                                     class="submit-btn w-full py-4 text-white font-bold uppercase tracking-[0.15em] text-sm transition-all duration-300 active:scale-[0.98] flex items-center justify-center gap-3">
                                 <svg x-show="!isSubmitting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                                 <svg x-show="isSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                                <span x-text="isSubmitting ? 'Uploading...' : 'Submit Payment Proof'"></span>
+                                <span x-text="isSubmitting ? 'Mengupload...' : '{{ $order->payment_proof ? 'Upload Ulang Bukti Pembayaran' : 'Kirim Bukti Pembayaran' }}'"></span>
                             </button>
                         </form>
                     </div>
@@ -393,9 +442,16 @@
                                 </div>
                                 <div class="flex justify-between text-sm">
                                     <span class="text-gray-500">Status</span>
-                                    <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-200">
-                                        Awaiting Transfer
-                                    </span>
+                                    @if($order->status === 'pending_verification' || $order->status === 'waiting_verification')
+                                        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 bg-amber-100 text-amber-700 border border-amber-200 flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse inline-block"></span>
+                                            Waiting Verification
+                                        </span>
+                                    @else
+                                        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 bg-yellow-100 text-yellow-700 border border-yellow-200">
+                                            Awaiting Transfer
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>

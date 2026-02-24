@@ -295,12 +295,12 @@
                         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Days Active</p>
                     </div>
 
-                    {{-- Stat 3: Orders --}}
+                    {{-- Stat 3: Total Orders --}}
                     <div class="card-lift bg-white border border-gray-200 p-5 text-center slide-up slide-up-3">
                         <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
                             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <p class="text-2xl font-black brand-font count-up">0</p>
+                        <p class="text-2xl font-black brand-font count-up">{{ $stats['total'] }}</p>
                         <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Total Orders</p>
                     </div>
                 </div>
@@ -315,22 +315,22 @@
                     </div>
 
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                        {{-- Unpaid --}}
+                        {{-- Pending / Unpaid --}}
                         <div class="card-lift bg-white p-5 border border-gray-200 cursor-pointer group flex flex-col items-center justify-center text-center relative overflow-hidden">
                             <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-amber-600 group-hover:text-white transition duration-300">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                             </div>
-                            <p class="text-2xl font-black brand-font mb-1">0</p>
+                            <p class="text-2xl font-black brand-font mb-1">{{ $stats['pending'] }}</p>
                             <h4 class="font-bold uppercase text-[10px] tracking-widest text-gray-400 group-hover:text-black transition">Unpaid</h4>
                         </div>
 
-                        {{-- Processed --}}
+                        {{-- Paid / Processed --}}
                         <div class="card-lift bg-white p-5 border border-gray-200 cursor-pointer group flex flex-col items-center justify-center text-center relative overflow-hidden">
                             <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-600 group-hover:text-white transition duration-300">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <p class="text-2xl font-black brand-font mb-1">0</p>
-                            <h4 class="font-bold uppercase text-[10px] tracking-widest text-gray-400 group-hover:text-black transition">Processed</h4>
+                            <p class="text-2xl font-black brand-font mb-1">{{ $stats['paid'] }}</p>
+                            <h4 class="font-bold uppercase text-[10px] tracking-widest text-gray-400 group-hover:text-black transition">Paid</h4>
                         </div>
 
                         {{-- Shipped --}}
@@ -338,7 +338,7 @@
                             <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-purple-600 group-hover:text-white transition duration-300">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"></path></svg>
                             </div>
-                            <p class="text-2xl font-black brand-font mb-1">0</p>
+                            <p class="text-2xl font-black brand-font mb-1">{{ $stats['shipped'] }}</p>
                             <h4 class="font-bold uppercase text-[10px] tracking-widest text-gray-400 group-hover:text-black transition">Shipped</h4>
                         </div>
 
@@ -347,7 +347,7 @@
                             <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mb-3 group-hover:bg-green-600 group-hover:text-white transition duration-300">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             </div>
-                            <p class="text-2xl font-black brand-font mb-1">0</p>
+                            <p class="text-2xl font-black brand-font mb-1">{{ $stats['completed'] }}</p>
                             <h4 class="font-bold uppercase text-[10px] tracking-widest text-gray-400 group-hover:text-black transition">Completed</h4>
                         </div>
                     </div>
@@ -389,13 +389,13 @@
                             </div>
                         </a>
 
-                        <a href="#" class="card-lift bg-white border border-gray-200 p-5 flex flex-col gap-3 group hover:border-black transition">
+                        <a href="{{ route('faq') }}" class="card-lift bg-white border border-gray-200 p-5 flex flex-col gap-3 group hover:border-black transition">
                             <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-black group-hover:text-white transition">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                             </div>
                             <div>
                                 <p class="text-sm font-bold uppercase tracking-wider">Support</p>
-                                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Need help?</p>
+                                <p class="text-[10px] text-gray-400 uppercase tracking-wider">FAQ & Bantuan</p>
                             </div>
                         </a>
                     </div>
@@ -412,12 +412,105 @@
                             </div>
                             <h3 class="font-bold brand-font uppercase tracking-tight text-lg">Recent Orders</h3>
                         </div>
-                        <a href="#" class="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-black transition">View All</a>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">{{ $stats['total'] }} total pesanan</span>
                     </div>
 
+                    @if($recentOrders->count() > 0)
+                    {{-- ORDER TABLE --}}
+                    <div class="divide-y divide-gray-50">
+                        @foreach($recentOrders as $order)
+                        @php
+                            $statusConfig = [
+                                'pending'              => ['bg-yellow-100 text-yellow-700',  '⏳ Pending'],
+                                'pending_verification' => ['bg-amber-100 text-amber-700',    '🔍 Verifikasi'],
+                                'paid'                 => ['bg-emerald-100 text-emerald-700','✅ Paid'],
+                                'processing'           => ['bg-blue-100 text-blue-700',      '📦 Dikemas'],
+                                'shipped'              => ['bg-indigo-100 text-indigo-700',  '🚚 Dikirim'],
+                                'completed'            => ['bg-green-100 text-green-700',    '🎉 Selesai'],
+                                'cancelled'            => ['bg-red-100 text-red-700',        '❌ Dibatalkan'],
+                            ];
+                            [$badgeCls, $badgeLabel] = $statusConfig[$order->status] ?? ['bg-gray-100 text-gray-600', $order->status];
+                            // Cek sudah pernah review belum (ambil product_id dari item pertama)
+                            $reviewedProductIds = \App\Models\Review::where('user_id', auth()->id())
+                                ->where('order_id', $order->id)->pluck('product_id')->toArray();
+                        @endphp
+                        <div class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/60 transition group">
+
+                            {{-- Order Icon --}}
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-black group-hover:text-white transition">
+                                <svg class="w-5 h-5 text-gray-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                            </div>
+
+                            {{-- Order Info --}}
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-0.5">
+                                    <p class="font-bold text-sm font-mono tracking-wider text-gray-900">{{ $order->order_number }}</p>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider {{ $badgeCls }}">{{ $badgeLabel }}</span>
+                                    @if($order->payment_method === 'manual')
+                                        <span class="text-[10px] text-gray-300 font-medium">🏦 Manual</span>
+                                    @else
+                                        <span class="text-[10px] text-gray-300 font-medium">💳 Midtrans</span>
+                                    @endif
+                                </div>
+                                <p class="text-xs text-gray-400">{{ $order->items->count() }} produk · {{ $order->created_at->format('d M Y') }} · {{ $order->created_at->diffForHumans() }}</p>
+                            </div>
+
+                            {{-- Total --}}
+                            <div class="text-right flex-shrink-0">
+                                <p class="font-black brand-font text-gray-900">Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
+                                {{-- Tombol aksi berdasarkan status --}}
+                                @if(in_array($order->status, ['pending', 'pending_verification']))
+                                    @if($order->payment_method === 'manual')
+                                        <a href="{{ route('checkout.manual', $order) }}"
+                                           class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-amber-600 hover:text-amber-800 transition">
+                                            {{ $order->payment_proof ? 'Lihat Status →' : 'Upload Bukti →' }}
+                                        </a>
+                                    @else
+                                        <a href="{{ route('checkout.midtrans', $order) }}"
+                                           class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-800 transition">
+                                            Bayar Sekarang →
+                                        </a>
+                                    @endif
+                                @elseif($order->status === 'paid')
+                                    <span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-600">✓ Dikonfirmasi Admin</span>
+                                @elseif($order->status === 'processing')
+                                    <span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-blue-600">📦 Sedang Dikemas</span>
+                                @elseif($order->status === 'shipped')
+                                    <div class="flex flex-col items-end gap-1 mt-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">🚚 Dalam Pengiriman</span>
+                                        {{-- Tombol Review per produk yang belum diulas --}}
+                                        @foreach($order->items as $item)
+                                            @if($item->product && !in_array($item->product_id, $reviewedProductIds))
+                                            <a href="{{ route('reviews.create', [$order, $item->product_id]) }}"
+                                               class="text-[10px] font-black uppercase tracking-wider text-amber-600 hover:text-amber-800 transition">⭐ Ulas →</a>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @elseif($order->status === 'completed')
+                                    <div class="flex flex-col items-end gap-1 mt-1">
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-green-600">🎉 Pesanan Selesai</span>
+                                        @foreach($order->items as $item)
+                                            @if($item->product)
+                                                @if(!in_array($item->product_id, $reviewedProductIds))
+                                                <a href="{{ route('reviews.create', [$order, $item->product_id]) }}"
+                                                   class="text-[10px] font-black uppercase tracking-wider text-amber-600 hover:text-amber-800 transition">⭐ Tulis Ulasan →</a>
+                                                @else
+                                                <span class="text-[10px] font-bold text-gray-400">✓ Sudah Diulas</span>
+                                                @endif
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                @elseif($order->status === 'cancelled')
+                                    <span class="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-red-500">Dibatalkan</span>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+
+                    @else
                     {{-- EMPTY STATE --}}
                     <div class="p-12 sm:p-20 text-center flex flex-col items-center justify-center">
-                        {{-- Animated Icon --}}
                         <div class="relative mb-8">
                             <div class="w-24 h-24 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100 rotate-3 hover:rotate-0 transition-transform duration-500">
                                 <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
@@ -426,7 +519,6 @@
                                 <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                             </div>
                         </div>
-
                         <h4 class="text-2xl font-black brand-font text-black mb-2 uppercase italic tracking-wide">No Orders Yet</h4>
                         <p class="text-sm text-gray-400 mb-8 max-w-sm mx-auto leading-relaxed">
                             You haven't made any purchases yet. Explore our latest collection and secure your first pair of authentic kicks.
@@ -436,6 +528,7 @@
                             Start Shopping
                         </a>
                     </div>
+                    @endif
                 </div>
 
             </main>

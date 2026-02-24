@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Orders')
+@section('title', 'Orders Management')
 @section('page-title', 'Orders')
-@section('page-subtitle', 'Cart & Order Management — ' . now()->format('l, d F Y'))
+@section('page-subtitle', 'Manajemen Pesanan & Verifikasi Pembayaran — ' . now()->format('l, d F Y'))
 
 @section('content')
 
@@ -23,182 +23,222 @@
     {{-- ============================================================ --}}
     {{-- STAT CARDS --}}
     {{-- ============================================================ --}}
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
 
-        {{-- Total Cart Items --}}
+        {{-- Total Orders --}}
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
-                    <svg class="w-5 h-5 text-blue-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                </div>
+            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-3 group-hover:bg-gray-900 transition-colors duration-300">
+                <svg class="w-5 h-5 text-gray-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Cart Items</p>
-            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['totalItems']) }}</p>
-            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total Orders</p>
+            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['total']) }}</p>
+            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gray-400 to-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
         </div>
 
-        {{-- Active Customers --}}
+        {{-- Pending --}}
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-violet-50 rounded-xl flex items-center justify-center group-hover:bg-violet-500 group-hover:text-white transition-colors duration-300">
-                    <svg class="w-5 h-5 text-violet-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </div>
+            <div class="w-10 h-10 bg-yellow-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-yellow-500 transition-colors duration-300">
+                <svg class="w-5 h-5 text-yellow-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Active Shoppers</p>
-            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['totalUsers']) }}</p>
-            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-violet-400 to-violet-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Pending</p>
+            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['pending']) }}</p>
+            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-400 to-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
         </div>
 
-        {{-- Total Quantity --}}
+        {{-- Needs Verification --}}
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
-                    <svg class="w-5 h-5 text-amber-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                </div>
+            <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-amber-500 transition-colors duration-300">
+                <svg class="w-5 h-5 text-amber-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Total Qty</p>
-            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['totalQuantity']) }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Verifikasi</p>
+            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['pending_verification']) }}</p>
+            @if($stats['pending_verification'] > 0)
+                <span class="absolute top-3 right-3 w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
+            @endif
             <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
         </div>
 
-        {{-- Potential Revenue --}}
+        {{-- Paid --}}
         <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
-            <div class="flex items-center justify-between mb-3">
-                <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
-                    <svg class="w-5 h-5 text-emerald-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
+            <div class="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-emerald-500 transition-colors duration-300">
+                <svg class="w-5 h-5 text-emerald-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Potential Revenue</p>
-            <p class="text-xl font-black brand-font text-gray-900">Rp {{ number_format($stats['totalRevenue'], 0, ',', '.') }}</p>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Paid</p>
+            <p class="text-2xl font-black brand-font text-gray-900">{{ number_format($stats['paid']) }}</p>
             <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
         </div>
 
-    </div>
-
-    {{-- ============================================================ --}}
-    {{-- INFO BANNER --}}
-    {{-- ============================================================ --}}
-    <div class="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 mb-6 flex items-start gap-3">
-        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <div>
-            <p class="text-sm font-bold text-amber-800">Showing Active Cart Items</p>
-            <p class="text-xs text-amber-600 mt-0.5">Order management will be fully integrated once the checkout flow is implemented. Currently displaying all active cart items from customers.</p>
+        {{-- Revenue --}}
+        <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group relative overflow-hidden">
+            <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center mb-3 group-hover:bg-blue-500 transition-colors duration-300">
+                <svg class="w-5 h-5 text-blue-500 group-hover:text-white transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Revenue</p>
+            <p class="text-lg font-black brand-font text-gray-900">Rp {{ number_format($stats['revenue'], 0, ',', '.') }}</p>
+            <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-2xl"></div>
         </div>
+
     </div>
 
     {{-- ============================================================ --}}
     {{-- FILTER & SEARCH --}}
     {{-- ============================================================ --}}
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 border-b border-gray-100">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-5 border-b border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <div class="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
                 </div>
                 <div>
-                    <h3 class="font-bold brand-font uppercase tracking-tight text-gray-900">Cart Items</h3>
-                    <p class="text-[11px] text-gray-400">{{ $cartItems->total() }} total records</p>
+                    <h3 class="font-bold brand-font uppercase tracking-tight text-gray-900">All Orders</h3>
+                    <p class="text-[11px] text-gray-400">{{ $orders->total() }} total pesanan</p>
                 </div>
             </div>
 
-            {{-- Search Form --}}
-            <form method="GET" action="{{ route('admin.orders.index') }}" class="flex items-center gap-2 w-full sm:w-auto">
-                <div class="relative flex-1 sm:w-72">
+            {{-- Filter Forms --}}
+            <form method="GET" action="{{ route('admin.orders.index') }}" class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+
+                {{-- Status Filter --}}
+                <select name="status" onchange="this.form.submit()"
+                        class="text-xs border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:bg-white focus:border-gray-400 outline-none transition font-medium">
+                    <option value="">Semua Status</option>
+                    <option value="pending"              {{ request('status') === 'pending' ? 'selected' : '' }}>⏳ Pending</option>
+                    <option value="pending_verification" {{ request('status') === 'pending_verification' ? 'selected' : '' }}>🔍 Waiting Verification</option>
+                    <option value="paid"                 {{ request('status') === 'paid' ? 'selected' : '' }}>✅ Paid</option>
+                    <option value="shipped"              {{ request('status') === 'shipped' ? 'selected' : '' }}>🚚 Shipped</option>
+                    <option value="completed"            {{ request('status') === 'completed' ? 'selected' : '' }}>🎉 Completed</option>
+                    <option value="cancelled"            {{ request('status') === 'cancelled' ? 'selected' : '' }}>❌ Cancelled</option>
+                </select>
+
+                {{-- Method Filter --}}
+                <select name="method" onchange="this.form.submit()"
+                        class="text-xs border border-gray-200 rounded-xl px-3 py-2.5 bg-gray-50 focus:bg-white focus:border-gray-400 outline-none transition font-medium">
+                    <option value="">Semua Metode</option>
+                    <option value="manual"   {{ request('method') === 'manual' ? 'selected' : '' }}>🏦 Manual Transfer</option>
+                    <option value="midtrans" {{ request('method') === 'midtrans' ? 'selected' : '' }}>💳 Midtrans</option>
+                </select>
+
+                {{-- Search --}}
+                <div class="relative">
                     <input type="text" name="search" value="{{ request('search') }}"
-                           placeholder="Search user or product..."
-                           class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-gray-400 outline-none transition">
-                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                           placeholder="Cari order / nama / email..."
+                           class="pl-8 pr-4 py-2.5 text-xs border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-gray-400 outline-none transition w-56">
+                    <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 </div>
-                <button type="submit" class="px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-700 transition whitespace-nowrap">Search</button>
-                @if(request('search'))
-                    <a href="{{ route('admin.orders.index') }}" class="px-3 py-2.5 border border-gray-200 text-sm text-gray-500 rounded-xl hover:bg-gray-100 transition">Clear</a>
+
+                <button type="submit" class="px-4 py-2.5 bg-gray-900 text-white text-xs font-bold rounded-xl hover:bg-gray-700 transition whitespace-nowrap">Cari</button>
+
+                @if(request()->hasAny(['search', 'status', 'method']))
+                    <a href="{{ route('admin.orders.index') }}" class="px-3 py-2.5 border border-gray-200 text-xs text-gray-500 rounded-xl hover:bg-gray-100 transition">Reset</a>
                 @endif
             </form>
         </div>
 
         {{-- TABLE --}}
-        @if($cartItems->count() > 0)
+        @if($orders->count() > 0)
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead class="bg-gray-50 text-[10px] uppercase font-bold text-gray-500 tracking-wider">
                     <tr>
-                        <th class="px-6 py-4">#</th>
-                        <th class="px-6 py-4">Customer</th>
-                        <th class="px-6 py-4">Product</th>
-                        <th class="px-6 py-4">Size</th>
-                        <th class="px-6 py-4">Qty</th>
-                        <th class="px-6 py-4">Subtotal</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4">Added</th>
+                        <th class="px-5 py-4">Order</th>
+                        <th class="px-5 py-4">Customer</th>
+                        <th class="px-5 py-4">Total</th>
+                        <th class="px-5 py-4">Metode</th>
+                        <th class="px-5 py-4">Status</th>
+                        <th class="px-5 py-4">Bukti Bayar</th>
+                        <th class="px-5 py-4">Tanggal</th>
+                        <th class="px-5 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50 text-sm">
-                    @foreach($cartItems as $item)
-                    <tr class="hover:bg-gray-50/60 transition">
-                        <td class="px-6 py-4 text-gray-400 text-xs font-mono">
-                            #{{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}
+                    @foreach($orders as $order)
+                    <tr class="hover:bg-gray-50/60 transition {{ $order->status === 'pending_verification' ? 'bg-amber-50/40' : '' }}">
+
+                        {{-- Order Number --}}
+                        <td class="px-5 py-4">
+                            <span class="font-bold font-mono text-xs tracking-widest text-gray-800">{{ $order->order_number }}</span>
+                            <p class="text-[10px] text-gray-400 mt-0.5">{{ $order->items->sum('quantity') }} item(s)</p>
                         </td>
 
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
+                        {{-- Customer --}}
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-2.5">
                                 <div class="w-8 h-8 bg-gray-900 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                                    {{ substr($item->user->name ?? '?', 0, 1) }}
+                                    {{ strtoupper(substr($order->user->name ?? '?', 0, 1)) }}
                                 </div>
                                 <div class="min-w-0">
-                                    <p class="font-semibold text-gray-900 text-sm truncate">{{ $item->user->name ?? 'Unknown' }}</p>
-                                    <p class="text-[11px] text-gray-400 truncate">{{ $item->user->email ?? '-' }}</p>
+                                    <p class="font-semibold text-gray-900 text-sm truncate max-w-[130px]">{{ $order->user->name ?? 'Unknown' }}</p>
+                                    <p class="text-[10px] text-gray-400 truncate max-w-[130px]">{{ $order->user->email ?? '-' }}</p>
                                 </div>
                             </div>
                         </td>
 
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                @if($item->product && $item->product->thumbnail)
-                                    <img src="{{ $item->product->thumbnail }}" alt="{{ $item->product->name }}"
-                                         class="w-10 h-10 object-cover rounded-lg flex-shrink-0 bg-gray-100">
-                                @else
-                                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
-                                        <svg class="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    </div>
-                                @endif
-                                <div class="min-w-0">
-                                    <p class="font-semibold text-gray-900 text-sm truncate max-w-[180px]">{{ $item->product->name ?? 'Product Deleted' }}</p>
-                                    <p class="text-[11px] text-gray-400">{{ $item->product->brand ?? '-' }}</p>
-                                </div>
-                            </div>
+                        {{-- Total --}}
+                        <td class="px-5 py-4">
+                            <span class="font-bold text-gray-900 text-sm">Rp {{ number_format($order->total_price, 0, ',', '.') }}</span>
                         </td>
 
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2.5 py-1 bg-gray-100 text-gray-700 text-[11px] font-bold rounded-lg">
-                                {{ $item->size }}
-                            </span>
-                        </td>
-
-                        <td class="px-6 py-4">
-                            <span class="font-bold text-gray-900">{{ $item->quantity }}</span>
-                        </td>
-
-                        <td class="px-6 py-4">
-                            @if($item->product)
-                                <span class="font-bold text-gray-900">
-                                    Rp {{ number_format($item->product->price * $item->quantity, 0, ',', '.') }}
+                        {{-- Metode --}}
+                        <td class="px-5 py-4">
+                            @if($order->payment_method === 'midtrans')
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                    Midtrans
                                 </span>
                             @else
-                                <span class="text-gray-400">-</span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-700 text-[10px] font-bold rounded-lg uppercase tracking-wider">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
+                                    Manual
+                                </span>
                             @endif
                         </td>
 
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase">
-                                <span class="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse"></span>
-                                In Cart
+                        {{-- Status Badge --}}
+                        <td class="px-5 py-4">
+                            @php
+                                $statusConfig = [
+                                    'pending'              => ['bg-yellow-100 text-yellow-700 border-yellow-200',  '⏳'],
+                                    'pending_verification' => ['bg-amber-100 text-amber-700 border-amber-200',     '🔍'],
+                                    'paid'                 => ['bg-emerald-100 text-emerald-700 border-emerald-200','✅'],
+                                    'shipped'              => ['bg-indigo-100 text-indigo-700 border-indigo-200',  '🚚'],
+                                    'completed'            => ['bg-green-100 text-green-700 border-green-200',     '🎉'],
+                                    'cancelled'            => ['bg-red-100 text-red-700 border-red-200',           '❌'],
+                                ];
+                                [$cls, $icon] = $statusConfig[$order->status] ?? ['bg-gray-100 text-gray-600 border-gray-200', '•'];
+                            @endphp
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold rounded-lg border uppercase tracking-wider {{ $cls }}">
+                                {{ $icon }} {{ str_replace('_', ' ', $order->status) }}
                             </span>
                         </td>
 
-                        <td class="px-6 py-4 text-gray-400 text-xs whitespace-nowrap">
-                            {{ $item->created_at->format('d M Y') }}<br>
-                            <span class="text-gray-300">{{ $item->created_at->diffForHumans() }}</span>
+                        {{-- Bukti Bayar --}}
+                        <td class="px-5 py-4">
+                            @if($order->payment_proof)
+                                <a href="{{ route('admin.orders.show', $order) }}"
+                                   class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500 text-white text-[10px] font-bold rounded-lg hover:bg-amber-600 transition uppercase tracking-wider">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    Lihat Bukti
+                                </a>
+                            @else
+                                <span class="text-[10px] text-gray-300 font-medium">— Belum ada</span>
+                            @endif
                         </td>
+
+                        {{-- Tanggal --}}
+                        <td class="px-5 py-4 text-gray-400 text-[11px] whitespace-nowrap">
+                            {{ $order->created_at->format('d M Y') }}<br>
+                            <span class="text-gray-300">{{ $order->created_at->diffForHumans() }}</span>
+                        </td>
+
+                        {{-- Aksi --}}
+                        <td class="px-5 py-4 text-center">
+                            <a href="{{ route('admin.orders.show', $order) }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-bold rounded-lg hover:bg-gray-700 transition">
+                                Detail
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                            </a>
+                        </td>
+
                     </tr>
                     @endforeach
                 </tbody>
@@ -206,26 +246,26 @@
         </div>
 
         {{-- Pagination --}}
-        @if($cartItems->hasPages())
-        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
-            <p class="text-xs text-gray-400">Showing {{ $cartItems->firstItem() }}–{{ $cartItems->lastItem() }} of {{ $cartItems->total() }} results</p>
+        @if($orders->hasPages())
+        <div class="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
+            <p class="text-xs text-gray-400">Showing {{ $orders->firstItem() }}–{{ $orders->lastItem() }} of {{ $orders->total() }} pesanan</p>
             <div class="flex items-center gap-1">
-                @if($cartItems->onFirstPage())
+                @if($orders->onFirstPage())
                     <span class="px-3 py-1.5 text-xs text-gray-300 border border-gray-100 rounded-lg cursor-not-allowed">← Prev</span>
                 @else
-                    <a href="{{ $cartItems->previousPageUrl() }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition">← Prev</a>
+                    <a href="{{ $orders->previousPageUrl() }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition">← Prev</a>
                 @endif
 
-                @foreach($cartItems->getUrlRange(max(1, $cartItems->currentPage()-2), min($cartItems->lastPage(), $cartItems->currentPage()+2)) as $page => $url)
-                    @if($page == $cartItems->currentPage())
+                @foreach($orders->getUrlRange(max(1, $orders->currentPage()-2), min($orders->lastPage(), $orders->currentPage()+2)) as $page => $url)
+                    @if($page == $orders->currentPage())
                         <span class="px-3 py-1.5 text-xs font-bold bg-gray-900 text-white rounded-lg">{{ $page }}</span>
                     @else
                         <a href="{{ $url }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition">{{ $page }}</a>
                     @endif
                 @endforeach
 
-                @if($cartItems->hasMorePages())
-                    <a href="{{ $cartItems->nextPageUrl() }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition">Next →</a>
+                @if($orders->hasMorePages())
+                    <a href="{{ $orders->nextPageUrl() }}" class="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition">Next →</a>
                 @else
                     <span class="px-3 py-1.5 text-xs text-gray-300 border border-gray-100 rounded-lg cursor-not-allowed">Next →</span>
                 @endif
@@ -237,14 +277,14 @@
         {{-- EMPTY STATE --}}
         <div class="py-20 text-center">
             <div class="w-20 h-20 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-gray-100">
-                <svg class="w-10 h-10 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                <svg class="w-10 h-10 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
-            <h4 class="text-lg font-bold brand-font uppercase text-gray-700 mb-2">No Cart Items Found</h4>
+            <h4 class="text-lg font-bold brand-font uppercase text-gray-700 mb-2">Belum Ada Pesanan</h4>
             <p class="text-sm text-gray-400 max-w-xs mx-auto">
-                @if(request('search'))
-                    No results for "{{ request('search') }}". <a href="{{ route('admin.orders.index') }}" class="text-blue-500 hover:underline">Clear search</a>
+                @if(request()->hasAny(['search', 'status', 'method']))
+                    Tidak ditemukan hasil untuk filter ini. <a href="{{ route('admin.orders.index') }}" class="text-blue-500 hover:underline">Reset filter</a>
                 @else
-                    No customers have added items to their cart yet.
+                    Belum ada pesanan yang masuk dari pelanggan.
                 @endif
             </p>
         </div>

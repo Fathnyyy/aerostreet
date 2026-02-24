@@ -261,5 +261,179 @@
         </div>
     </main>
 
+    {{-- ============================================================ --}}
+    {{-- REVIEWS & RATING SECTION --}}
+    {{-- ============================================================ --}}
+    <section class="bg-white border-t border-gray-100 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            {{-- Header --}}
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+                <div>
+                    <span class="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400">Customer Reviews</span>
+                    <h2 class="text-3xl font-black brand-font uppercase tracking-tighter mt-1">Ulasan Produk</h2>
+                </div>
+                <span class="text-sm font-semibold text-gray-400">{{ $totalReviews }} ulasan terverifikasi</span>
+            </div>
+
+            @if($totalReviews > 0)
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-10 mb-12">
+
+                {{-- Rating Summary Card --}}
+                <div class="lg:col-span-1">
+                    <div class="bg-gray-50 rounded-2xl p-6 text-center sticky top-24">
+                        <div class="text-7xl font-black brand-font text-black leading-none mb-1">{{ $avgRating }}</div>
+                        <div class="flex justify-center gap-0.5 mb-2">
+                            @for($i = 1; $i <= 5; $i++)
+                                @if($i <= floor($avgRating))
+                                    <span class="text-amber-400 text-xl">★</span>
+                                @elseif($i - $avgRating < 1)
+                                    <span class="text-amber-400 text-xl">★</span>
+                                @else
+                                    <span class="text-gray-200 text-xl">★</span>
+                                @endif
+                            @endfor
+                        </div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-6">dari 5 bintang</p>
+
+                        {{-- Bar chart per bintang --}}
+                        <div class="space-y-2">
+                            @for($star = 5; $star >= 1; $star--)
+                            @php
+                                $count = $ratingCounts[$star] ?? 0;
+                                $pct   = $totalReviews > 0 ? round($count / $totalReviews * 100) : 0;
+                            @endphp
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-black text-gray-500 w-2">{{ $star }}</span>
+                                <span class="text-amber-400 text-xs">★</span>
+                                <div class="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div class="h-full bg-amber-400 rounded-full transition-all duration-700" style="width: {{ $pct }}%"></div>
+                                </div>
+                                <span class="text-[10px] font-bold text-gray-400 w-6 text-right">{{ $count }}</span>
+                            </div>
+                            @endfor
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Review List --}}
+                <div class="lg:col-span-3 space-y-6">
+                    @foreach($reviews as $review)
+                    <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+
+                        {{-- Top Row --}}
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <div class="flex items-center gap-3">
+                                {{-- Avatar --}}
+                                <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center font-black text-sm uppercase flex-shrink-0">
+                                    {{ strtoupper(substr($review->user->name ?? '?', 0, 1)) }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-gray-900 text-sm">{{ $review->user->name ?? 'Anonymous' }}</p>
+                                    <div class="flex items-center gap-2 mt-0.5">
+                                        {{-- Bintang --}}
+                                        <div class="flex gap-0.5">
+                                            @for($i = 1; $i <= 5; $i++)
+                                            <span class="text-sm {{ $i <= $review->rating ? 'text-amber-400' : 'text-gray-200' }}">★</span>
+                                            @endfor
+                                        </div>
+                                        <span class="text-[10px] font-bold text-gray-300">·</span>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">✓ Verified</span>
+                                        @if($review->size_fit)
+                                        <span class="text-[10px] font-semibold text-gray-400">· Ukuran: {{ $review->size_fit_label }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <p class="text-xs text-gray-400">{{ $review->created_at->format('d M Y') }}</p>
+                                <p class="text-[10px] text-gray-300">{{ $review->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+
+                        {{-- Title + Body --}}
+                        @if($review->title)
+                        <h4 class="font-black text-gray-900 brand-font uppercase mb-1">{{ $review->title }}</h4>
+                        @endif
+                        @if($review->body)
+                        <p class="text-sm text-gray-600 leading-relaxed">{{ $review->body }}</p>
+                        @endif
+
+                        {{-- Foto Produk --}}
+                        @if($review->photos && count($review->photos) > 0)
+                        <div class="flex gap-2 mt-4 flex-wrap">
+                            @foreach($review->photos as $idx => $photo)
+                            <button onclick="openPhotoModal('{{ Storage::url($photo) }}')"
+                                    class="w-16 h-16 rounded-xl overflow-hidden border-2 border-gray-100 hover:border-black transition flex-shrink-0 group relative">
+                                <img src="{{ Storage::url($photo) }}" alt="Foto review {{ $idx + 1 }}" class="w-full h-full object-cover group-hover:scale-110 transition">
+                            </button>
+                            @endforeach
+                        </div>
+                        @endif
+
+                        {{-- Delete (hanya pemilik) --}}
+                        @auth
+                        @if(auth()->id() === $review->user_id)
+                        <div class="mt-4 pt-3 border-t border-gray-50">
+                            <form action="{{ route('reviews.destroy', $review) }}" method="POST"
+                                  onsubmit="return confirm('Hapus ulasan kamu?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="text-[10px] font-bold uppercase tracking-wider text-red-400 hover:text-red-600 transition">
+                                    × Hapus Ulasan
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+                        @endauth
+
+                    </div>
+                    @endforeach
+
+                    {{-- Pagination --}}
+                    @if($reviews->hasPages())
+                    <div class="mt-6">
+                        {{ $reviews->links() }}
+                    </div>
+                    @endif
+                </div>
+
+            </div>
+
+            @else
+            {{-- Empty State --}}
+            <div class="text-center py-16 bg-gray-50 rounded-2xl">
+                <div class="text-5xl mb-4">⭐</div>
+                <h3 class="font-black brand-font uppercase text-2xl mb-2">Belum Ada Ulasan</h3>
+                <p class="text-gray-400 text-sm">Jadilah yang pertama mengulas produk ini!</p>
+            </div>
+            @endif
+
+        </div>
+    </section>
+
+    {{-- Photo Modal --}}
+    <div id="photo-modal" class="hidden fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4"
+         onclick="if(event.target===this) closePhotoModal()">
+        <div class="relative max-w-3xl w-full">
+            <button onclick="closePhotoModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300 flex items-center gap-2 text-sm font-bold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                Tutup
+            </button>
+            <img id="photo-modal-img" src="" alt="Review Photo" class="w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl">
+        </div>
+    </div>
+    <script>
+        function openPhotoModal(src) {
+            document.getElementById('photo-modal-img').src = src;
+            document.getElementById('photo-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+        function closePhotoModal() {
+            document.getElementById('photo-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', e => { if(e.key === 'Escape') closePhotoModal(); });
+    </script>
+
 </body>
 </html>

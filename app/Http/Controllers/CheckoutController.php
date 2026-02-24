@@ -24,6 +24,17 @@ class CheckoutController extends Controller
         MidtransConfig::$isProduction = config('midtrans.is_production');
         MidtransConfig::$isSanitized  = config('midtrans.is_sanitized');
         MidtransConfig::$is3ds        = config('midtrans.is_3ds');
+
+        // FIX: Windows localhost tidak punya CA certificate bundle
+        // Matikan SSL verification untuk development environment saja
+        // JANGAN gunakan di production!
+        if (!config('midtrans.is_production')) {
+            MidtransConfig::$curlOptions = [
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_HTTPHEADER     => [],
+            ];
+        }
     }
 
     /**
@@ -73,10 +84,9 @@ class CheckoutController extends Controller
         $tax      = $subtotal * 0.11;
         $total    = $subtotal + $tax;
 
-        // Buat Order dan Order Items dalam satu transaksi database
+        // Buat Order dan Order Items
         DB::beginTransaction();
         try {
-            // Buat record Order baru
             $order = Order::create([
                 'user_id'        => $user->id,
                 'order_number'   => Order::generateOrderNumber(),
@@ -85,19 +95,21 @@ class CheckoutController extends Controller
                 'status'         => 'pending',
             ]);
 
-            // Pindahkan item dari Cart ke OrderItem
             foreach ($carts as $cart) {
                 OrderItem::create([
                     'order_id'   => $order->id,
                     'product_id' => $cart->product_id,
                     'size'       => $cart->size,
                     'quantity'   => $cart->quantity,
-                    'price'      => $cart->product->price, // snapshot harga
+                    'price'      => $cart->product->price,
                 ]);
             }
 
-            // Kosongkan Cart user
-            Cart::where('user_id', $user->id)->delete();
+            // Untuk manual payment: hapus cart sekarang juga
+            // Untuk Midtrans: cart dihapus SETELAH snap token berhasil
+            if ($request->payment_method === 'manual') {
+                Cart::where('user_id', $user->id)->delete();
+            }
 
             DB::commit();
         } catch (\Exception $e) {
@@ -107,12 +119,11 @@ class CheckoutController extends Controller
                              ->with('error', 'Checkout failed. Please try again.');
         }
 
-        // Route ke pembayaran sesuai metode
+        // Route ke pembayaran
         if ($request->payment_method === 'midtrans') {
             return $this->processMidtrans($order, $user, $carts, $total);
         }
 
-        // Manual transfer
         return redirect()->route('checkout.manual', $order)
                          ->with('success', 'Order created! Please complete your transfer.');
     }
@@ -123,49 +134,70 @@ class CheckoutController extends Controller
     private function processMidtrans(Order $order, $user, $carts, float $total)
     {
         try {
-            // Build item details untuk Midtrans
-            $itemDetails = $carts->map(function ($cart) {
-                return [
-                    'id'       => 'PROD-' . $cart->product_id,
-                    'price'    => (int) round($cart->product->price),
-                    'quantity' => $cart->quantity,
-                    'name'     => substr($cart->product->name . ' (' . $cart->size . ')', 0, 50),
-                ];
-            })->toArray();
+            $grossAmount = (int) round($total);
 
-            // Tambahkan item pajak
-            $taxAmount = (int) round($total * 0.11 / 1.11); // Tax dari total
-            $itemDetails[] = [
-                'id'       => 'TAX-PPN',
-                'price'    => (int) round($total - collect($itemDetails)->sum(fn($i) => $i['price'] * $i['quantity'])),
-                'quantity' => 1,
-                'name'     => 'Tax (PPN 11%)',
-            ];
+            // Build item details per produk
+            $itemDetails = [];
+            $itemsTotal  = 0;
+
+            foreach ($carts as $cart) {
+                $unitPrice    = (int) round($cart->product->price);
+                $itemsTotal  += $unitPrice * $cart->quantity;
+                $itemDetails[] = [
+                    'id'       => 'PROD-' . $cart->product_id,
+                    'price'    => $unitPrice,
+                    'quantity' => $cart->quantity,
+                    'name'     => substr($cart->product->name . ' (Size ' . $cart->size . ')', 0, 50),
+                ];
+            }
+
+            // Hitung pajak sebagai selisih agar total PASTI cocok dengan gross_amount
+            // Ini menghindari rounding mismatch yang ditolak Midtrans
+            $taxAmount = $grossAmount - $itemsTotal;
+            if ($taxAmount > 0) {
+                $itemDetails[] = [
+                    'id'       => 'TAX-PPN11',
+                    'price'    => $taxAmount,
+                    'quantity' => 1,
+                    'name'     => 'Pajak PPN 11%',
+                ];
+            } elseif ($taxAmount < 0) {
+                // Jika negatif (rounding edge case), adjust item pertama
+                $itemDetails[0]['price'] += $taxAmount;
+            }
 
             $params = [
                 'transaction_details' => [
-                    'order_id'      => $order->order_number,
-                    'gross_amount'  => (int) round($total),
+                    'order_id'     => $order->order_number,
+                    'gross_amount' => $grossAmount,
                 ],
                 'customer_details' => [
-                    'name'  => $user->name,
-                    'email' => $user->email,
+                    'first_name' => $user->name,
+                    'email'      => $user->email,
                 ],
                 'item_details' => $itemDetails,
             ];
 
+            Log::info('Midtrans params', ['order' => $order->order_number, 'gross' => $grossAmount, 'items_sum' => collect($itemDetails)->sum(fn($i) => $i['price'] * $i['quantity'])]);
+
             $snapToken = Snap::getSnapToken($params);
+
+            // Snap token berhasil — sekarang aman hapus cart
+            Cart::where('user_id', $user->id)->delete();
 
             // Simpan snap token ke database
             $order->update(['snap_token' => $snapToken]);
 
             return redirect()->route('checkout.midtrans', $order);
         } catch (\Exception $e) {
-            Log::error('Midtrans token error: ' . $e->getMessage());
-            // Fallback: batalkan order jika gagal dapat token
-            $order->update(['status' => 'cancelled']);
+            Log::error('Midtrans token error: ' . $e->getMessage(), [
+                'order'  => $order->order_number,
+                'trace'  => $e->getTraceAsString(),
+            ]);
+            // Kembalikan status order ke pending agar bisa dicoba lagi
+            $order->update(['status' => 'pending']);
             return redirect()->route('cart.index')
-                             ->with('error', 'Payment gateway error. Please try again.');
+                             ->with('error', 'Payment gateway error: ' . $e->getMessage());
         }
     }
 
@@ -203,8 +235,13 @@ class CheckoutController extends Controller
         abort_if($order->user_id !== Auth::id(), 403);
 
         $request->validate([
-            'payment_proof' => 'required|image|mimes:jpeg,jpg,png|max:5120', // Max 5MB
+            'payment_proof' => 'required|image|mimes:jpeg,jpg,png|max:2048', // Max 2MB
         ]);
+
+        // Hapus bukti lama jika ada (replace)
+        if ($order->payment_proof) {
+            Storage::disk('public')->delete($order->payment_proof);
+        }
 
         // Simpan file ke storage/app/public/payment-proofs
         $path = $request->file('payment_proof')
@@ -215,62 +252,33 @@ class CheckoutController extends Controller
             'status'        => 'pending_verification',
         ]);
 
-        return redirect()->route('dashboard')
-                         ->with('success', 'Payment proof uploaded! We will verify your payment within 1x24 hours.');
+        return back()->with('success', 'Bukti pembayaran berhasil diupload! Kami akan memverifikasi dalam 1×24 jam.');
     }
 
     /**
-     * Webhook Callback dari Midtrans
-     * POST /midtrans/callback
-     * (Dikecualikan dari CSRF di bootstrap/app.php)
+     * ============================================================
+     * PENGGANTI WEBHOOK — Dipanggil via fetch() dari onSuccess Snap
+     * POST /checkout/{order}/midtrans-success
+     * ============================================================
+     * Karena proyek ini berjalan di localhost tanpa ngrok,
+     * webhook Midtrans tidak bisa diterima. Method ini dipanggil
+     * langsung dari callback onSuccess() di frontend Snap.js.
      */
-    public function midtransCallback(Request $request)
+    public function midtransSuccess(Order $order)
     {
-        $payload = $request->all();
+        // Pastikan order milik user yang sedang login
+        abort_if($order->user_id !== Auth::id(), 403);
 
-        // Verifikasi signature untuk keamanan
-        $serverKey         = config('midtrans.server_key');
-        $orderId           = $payload['order_id'] ?? '';
-        $statusCode        = $payload['status_code'] ?? '';
-        $grossAmount       = $payload['gross_amount'] ?? '';
-        $signatureKey      = $payload['signature_key'] ?? '';
-        $expectedSignature = hash('sha512', $orderId . $statusCode . $grossAmount . $serverKey);
-
-        if ($signatureKey !== $expectedSignature) {
-            Log::warning('Midtrans invalid signature for order: ' . $orderId);
-            return response()->json(['message' => 'Invalid signature'], 403);
+        // Hanya update jika order masih pending (hindari double-update)
+        if ($order->status === 'pending') {
+            $order->update(['status' => 'paid']);
+            Log::info("Midtrans onSuccess (frontend): Order {$order->order_number} → paid");
         }
 
-        // Cari order berdasarkan order_number
-        $order = Order::where('order_number', $orderId)->first();
-
-        if (!$order) {
-            return response()->json(['message' => 'Order not found'], 404);
-        }
-
-        $transactionStatus = $payload['transaction_status'] ?? '';
-        $fraudStatus       = $payload['fraud_status'] ?? 'accept';
-        $transactionId     = $payload['transaction_id'] ?? null;
-
-        // Update status berdasarkan response Midtrans
-        if ($transactionStatus === 'capture' && $fraudStatus === 'accept') {
-            $order->update([
-                'status'                   => 'paid',
-                'midtrans_transaction_id'  => $transactionId,
-            ]);
-        } elseif ($transactionStatus === 'settlement') {
-            $order->update([
-                'status'                   => 'paid',
-                'midtrans_transaction_id'  => $transactionId,
-            ]);
-        } elseif (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
-            $order->update(['status' => 'cancelled']);
-        } elseif ($transactionStatus === 'pending') {
-            $order->update(['status' => 'pending']);
-        }
-
-        Log::info("Midtrans callback: Order {$orderId} → status: {$transactionStatus}");
-
-        return response()->json(['message' => 'OK'], 200);
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Order status updated to paid.',
+        ]);
     }
+
 }

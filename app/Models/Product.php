@@ -29,4 +29,14 @@ class Product extends Model
     {
         return $this->hasMany(\App\Models\ProductSize::class);
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class)->where('status', 'approved');
+    }
+
+    public function getAverageRatingAttribute(): float
+    {
+        return round($this->reviews()->avg('rating') ?? 0, 1);
+    }
 }

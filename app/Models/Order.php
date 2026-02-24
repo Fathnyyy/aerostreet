@@ -40,12 +40,13 @@ class Order extends Model
     public function getStatusLabelAttribute(): string
     {
         return match($this->status) {
-            'pending'              => 'Awaiting Payment',
-            'pending_verification' => 'Verifying Payment',
-            'paid'                 => 'Payment Confirmed',
-            'shipped'              => 'Shipped',
-            'completed'            => 'Completed',
-            'cancelled'            => 'Cancelled',
+            'pending'              => 'Menunggu Pembayaran',
+            'pending_verification' => 'Menunggu Verifikasi',
+            'paid'                 => 'Pembayaran Dikonfirmasi',
+            'processing'           => 'Sedang Dikemas',
+            'shipped'              => 'Dalam Pengiriman',
+            'completed'            => 'Selesai',
+            'cancelled'            => 'Dibatalkan',
             default                => ucfirst($this->status),
         };
     }
@@ -59,6 +60,7 @@ class Order extends Model
             'pending'              => 'yellow',
             'pending_verification' => 'blue',
             'paid'                 => 'green',
+            'processing'           => 'blue',
             'shipped'              => 'indigo',
             'completed'            => 'emerald',
             'cancelled'            => 'red',
@@ -84,5 +86,16 @@ class Order extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
+
+    /** Apakah order ini bisa diulas (shipped atau completed) */
+    public function getCanReviewAttribute(): bool
+    {
+        return in_array($this->status, ['shipped', 'completed']);
     }
 }

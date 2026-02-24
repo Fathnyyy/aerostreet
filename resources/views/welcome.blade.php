@@ -397,10 +397,10 @@
                 <div>
                     <h4 class="text-sm font-bold uppercase tracking-wider mb-6">Support</h4>
                     <ul class="space-y-4 text-sm text-gray-400">
-                        <li><a href="#" class="hover:text-white transition">FAQ</a></li>
-                        <li><a href="#" class="hover:text-white transition">Shipping & Returns</a></li>
-                        <li><a href="#" class="hover:text-white transition">Size Guide</a></li>
-                        <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                        <li><a href="{{ route('faq') }}" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="{{ route('faq') }}#delivery" class="hover:text-white transition">Shipping & Returns</a></li>
+                        <li><a href="{{ route('faq') }}#product" class="hover:text-white transition">Size Guide</a></li>
+                        <li><a href="{{ route('faq') }}#contact" class="hover:text-white transition">Contact Us</a></li>
                     </ul>
                 </div>
                 <div>
