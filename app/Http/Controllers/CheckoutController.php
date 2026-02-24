@@ -25,14 +25,19 @@ class CheckoutController extends Controller
         MidtransConfig::$isSanitized  = config('midtrans.is_sanitized');
         MidtransConfig::$is3ds        = config('midtrans.is_3ds');
 
-        // FIX: Windows localhost tidak punya CA certificate bundle
-        // Matikan SSL verification untuk development environment saja
-        // JANGAN gunakan di production!
+        // FIX 1: Windows localhost tidak punya CA certificate bundle
+        // Matikan SSL verification untuk development saja (JANGAN di production!)
+        //
+        // FIX 2: Midtrans\ApiRequestor line 117 mengakses Config::$curlOptions[CURLOPT_HTTPHEADER]
+        // tanpa isset() → PHP Warning → Laravel convert ke ErrorException → payment gagal.
+        // Solusi: set CURLOPT_HTTPHEADER => [] agar tidak undefined.
+        // Authorization header AMAN karena library menyimpannya di local variable
+        // ($curl_options di dalam remoteCall), bukan di Config::$curlOptions.
         if (!config('midtrans.is_production')) {
             MidtransConfig::$curlOptions = [
                 CURLOPT_SSL_VERIFYHOST => 0,
                 CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_HTTPHEADER     => [],
+                CURLOPT_HTTPHEADER     => [], // Wajib ada agar library tidak throw Warning
             ];
         }
     }
